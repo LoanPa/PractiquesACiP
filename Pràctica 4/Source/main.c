@@ -6,7 +6,48 @@
 
 #include "derivative.h" /* include peripheral declarations */
 
+static const short int GREEN = 18;
+static const short int RED = 19;
 
+
+
+/**
+ * This function sets 
+ * @param set_value indicates which value shall the LED be set to
+ * @param colour indicates the LED to 
+ **/
+void Set_LED(short int set_value, short int colour)
+{
+	if(set_value == 1)
+		PTB_BASE_PTR->PDOR = 1 << colour;
+	else
+		PTB_BASE_PTR->PDOR &= ~1 << colour;
+}
+
+void Change_LED_state(colour)
+{
+	PTB_BASE_PTR->PDOR = 1 << colour;
+}
+
+/**
+ * This function waits until the scan of the touch sensor is completed
+ **/
+void Wait_touch_scan()
+{
+	while(!(TSI0_BASE_PTR->GENCS & 4))
+			{
+				;
+			}
+}
+
+
+/**
+ * This function resets the end of scan flag related to the touch sensor
+ **/
+void Reset_EOSF()
+{
+	TSI0_BASE_PTR->GENCS |= 4;	
+}
 
 int main(void)
 {
@@ -38,57 +79,66 @@ int main(void)
 
 	// 6 SORTIDA
 	
+	//TODO: posar els dos leds a 0
+	Set_LED(1, GREEN);
+	Set_LED(1, RED);
 	PTB_BASE_PTR->PDDR |= (3<<18);
 	
 	// 7 CAPTURA TEMPS
 	TSI0_BASE_PTR->GENCS |= (1<<7);
 	TSI0_BASE_PTR->DATA  |= ( (1<<22)|(9<<28) );
 	
-	//Esperar a que acabe
-	uint16_t base;
-	while(!(TSI0_BASE_PTR->GENCS & 4))
-	{
-		;
-	}
+
+
+	uint16_t base_scan_time;
+	uint16_t new_scan_time;
+	uint16_t delta_scan_time;
+
 	
-	base=TSI0_BASE_PTR->DATA & 0xFFFF;
-	//(void)base;
+	Wait_touch_scan();
 	
-	TSI0_BASE_PTR->GENCS |= 4;
+	//This measurement will serve as the reference to detect changes in the touch sensor
+	base_scan_time = TSI0_BASE_PTR->DATA & 0xFFFF;
+	
+	
+	// reset end of scan flag
+	Reset_EOSF();
 	
 	// 8)
+	
+	
 	
 	while(1)
 	{
 		TSI0_BASE_PTR->DATA  |= ( (1<<22)|(9<<28) );
 		
-		//Esperar a que acabe
-		uint16_t new;
-		while(!(TSI0_BASE_PTR->GENCS & 4))
-		{
-			;
-		}
 		
-		new=TSI0_BASE_PTR->DATA & 0xFFFF;
+		
+		//Esperar a que acabe
+		Wait_touch_scan();
+		
+		new_scan_time=TSI0_BASE_PTR->DATA & 0xFFFF;
 	
-		// reset flag
-		TSI0_BASE_PTR->GENCS |= 4;
-		// green LED -> 18
-	// red LED -> 19
-		if((new - base) > 2)
-		{
-			PTB_BASE_PTR->PDOR = 1 << 18;
-			//green LED on 
-			// red LED off
-			
+		// reset end of scan flag
+		Reset_EOSF();
+		
+		delta_scan_time = new_scan_time - base_scan_time;
+		
+		if(delta_scan_time > 2)
+		{	
+			// GREEN LED on
+			//Set_LED(1, GREEN);	
+			Change_LED_state(GREEN);
+			// RED LED off
+			//Set_LED(0, RED);
 		}
 		else
 		{
-
-			PTB_BASE_PTR->PDOR = 1 << 19;
-
-					//green LED off
-					// red LED on
+			// red LED on		
+			//Set_LED(1, RED);
+			Change_LED_state(RED);
+			//green LED off
+			//Set_LED(0, GREEN);					
 		}
 		
 	}
