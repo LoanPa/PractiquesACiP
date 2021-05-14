@@ -1,8 +1,8 @@
 /*
- *  102685 Arquitectura de Computadors i Perifèrics 102685
- *	PRÀCTICA Nº 3 CURS 2017/2018 (2020/2021)
+ *  102685 Arquitectura de Computadors i PerifÃ¨rics 102685
+ *	PRÃ€CTICA NÂº 3 CURS 2017/2018 (2020/2021)
  * 
- * INCLUSIÓ DE CODI ASSEMBLADOR DINS DE C I OPERADORS BINARIS
+ * INCLUSIÃ“ DE CODI ASSEMBLADOR DINS DE C I OPERADORS BINARIS
  * 
  * 
  * MADE BY: Ivan Moreno and Loan Panareda Lecomte
@@ -32,7 +32,7 @@ void wait_nop(unsigned long int nop_count)
 
 int main(void)
 {
-	static const unsigned long int ELS_COPS_QUE_ES_VULGUI = 1000;
+	static const unsigned long int ELS_COPS_QUE_ES_VULGUI = 29;
 	
 	int moviment = -2; // moviment -> 1111...1110
 	
@@ -44,8 +44,12 @@ int main(void)
 	{	   
 		moviment <<= 4;
 		wait_nop(3);
+	}
+	
+	for(i = 0 ; i < ELS_COPS_QUE_ES_VULGUI; i++) // Repetir els cops que es vulgui
+	{	   
 		moviment >>= 4;
-
+		wait_nop(3);
 	}
 	
 	return 0;
