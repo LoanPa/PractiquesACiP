@@ -6,8 +6,8 @@
 
 #include "derivative.h" /* include peripheral declarations */
 
-static const short int GREEN = 18;
-static const short int RED = 19;
+static const uint32_t GREEN = 1 << 18;
+static const uint32_t RED = 1 << 19;
 volatile uint16_t base_scan_time = 5;
 
 
@@ -20,15 +20,32 @@ volatile uint16_t base_scan_time = 5;
 void Set_LED(short int set_value, short int colour)
 {
 	if(set_value == 1)
-		PTB_BASE_PTR->PDOR = 1 << colour;
+		PTB_BASE_PTR->PDOR = colour;
 	else
-		PTB_BASE_PTR->PDOR &= ~1 << colour;
+		PTB_BASE_PTR->PDOR &= ~colour;
 }
 
-void Change_LED_state(colour)
+void Turn_LED_on(uint32_t colour)
 {
-	PTB_BASE_PTR->PDOR = 1 << colour;
+
+	if ((PTB_BASE_PTR->PDOR & colour)  != colour)
+	{
+		PTB_BASE_PTR->PDOR |= colour;
+	}
+	
 }
+
+void Turn_LED_off(uint32_t colour)
+{
+
+	if ((PTB_BASE_PTR->PDOR & colour)  == colour)
+	{
+		PTB_BASE_PTR->PDOR &= ~colour;
+	}
+	
+}
+
+
 
 /**
  * This function waits until the scan of the touch sensor is completed
@@ -62,7 +79,8 @@ void TSI0_IRQHandler(void)
 			{	
 				// GREEN LED on
 				//Set_LED(1, GREEN);	
-				Change_LED_state(GREEN);
+				Turn_LED_on(GREEN);
+				Turn_LED_off(RED);
 				// RED LED off
 				//Set_LED(0, RED);
 			}
@@ -70,7 +88,9 @@ void TSI0_IRQHandler(void)
 			{
 				// red LED on		
 				//Set_LED(1, RED);
-				Change_LED_state(RED);
+				Turn_LED_on(RED);
+				Turn_LED_off(GREEN);
+
 				//green LED off
 				//Set_LED(0, GREEN);					
 			}
@@ -152,7 +172,7 @@ int main(void)
 	TSI0_BASE_PTR->DATA  |= ( (1<<22)|(9<<28) );
 	while(1)
 	{
-
+		asm("WFI");
 		
 	}
 	
